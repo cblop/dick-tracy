@@ -17,7 +17,9 @@
    :angle 0})
 
 (defn draw-tool [state]
-  (q/shape (:pencil (:tools state)) -20 -33 40 40))
+  (q/fill 255 0 0)
+  (q/ellipse 35 30 50 50)
+  (q/shape (:pencil (:tools state)) 20 -49 50 50))
 
 (defn tool-tray [state]
   (q/fill 200 200 200)
@@ -37,7 +39,7 @@
 (q/defsketch dick-tracy
   :title "You spin my circle right round"
   :size [500 500]
-  ;; :settings #(q/smooth 2)
+  ;; :settings #(q/smooth 4)
   ; setup function called only once, during sketch initialization.
   :setup setup
   :renderer :p2d
