@@ -80,11 +80,18 @@
 
 (defn update-state [state]
   ; Update sketch state by changing circle color and position.
-  (cond
-    q/mouse-pressed? (assoc state :drawing (not (:drawing? state)))
-    ;; (:drawing? state)
-    :else state
-    )
+  (let [is-drawing? (:drawing? state)]
+    (cond
+      (and q/mouse-pressed? (not is-drawing?)) (assoc state :drawing? true
+                                                      :paths (conj (:paths state) {:stroke (q/color 0 0 0) :fill (q/color 50 50 50) :points [{:x (:x state) :y (:y state)}]}))
+      (and q/mouse-pressed? is-drawing?)
+      (do
+        (println (:paths state))
+        (assoc-in state [:paths last] (assoc (last (:paths state)) :points (conj (:points (last (:paths state))) {:x (:x state) :y (:y state)}))))
+      (or (q/key-pressed? :enter) (q/key-pressed? :return)) (assoc state :drawing? false)
+      ;; (:drawing? state)
+      :else state
+      ))
   )
 
 (defn draw-state [state]
