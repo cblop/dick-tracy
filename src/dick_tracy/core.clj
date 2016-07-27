@@ -16,7 +16,23 @@
   {:tools {:pencil {:normal (q/load-shape "resources/pencil.svg")
                     :hover (q/load-shape "resources/pencil-hover.svg")
                     :click (q/load-shape "resources/pencil-click.svg")}}
-   :paths []
+   :paths [
+           {:stroke (q/color 255 0 0)
+            :fill (q/color 255 255 255)
+            :points [{:x 0 :y 0}
+                     {:x 100 :y 100}
+                     {:x 250 :y 600}]}
+           {:stroke (q/color 0 255 0)
+            :fill (q/color 0 255 255)
+            :points [{:x 800 :y 0}
+                     {:x 700 :y 100}
+                     {:x 600 :y 200}]}
+           {:stroke (q/color 0 0 255)
+            :fill (q/color 0 255 0)
+            :points [{:x 500 :y 1000}
+                     {:x 300 :y 900}
+                     {:x 650 :y 200}]}
+           ]
    :x 0
    :y 0
    :drawing? false
@@ -45,6 +61,20 @@
   (q/rect 5 5 (- WIDTH 10) 50)
   (draw-pencil state))
 
+(defn draw-path [{:keys [stroke fill points] :as path}]
+  (q/fill fill)
+  (q/stroke stroke)
+  (q/begin-shape)
+  (doseq [p points]
+    (q/vertex (:x p) (:y p)))
+  (q/end-shape :close)
+  )
+
+(defn draw-paths [state]
+  (let [paths (:paths state)]
+    (doseq [p paths] (draw-path p))
+    ))
+
 (defn mouse-moved [state event]
   (assoc state :x (:x event) :y (:y event)))
 
@@ -53,12 +83,14 @@
   (cond
     q/mouse-pressed? (assoc state :drawing (not (:drawing? state)))
     ;; (:drawing? state)
+    :else state
     )
   )
 
 (defn draw-state [state]
   ; Clear the sketch by filling it with light-grey color.
   (q/background 255 255 255)
+  (draw-paths state)
   (tool-tray state)
   ;; (q/fill 0 0 255)
   ;; (q/ellipse (:x state) (:y state) 20 20)
