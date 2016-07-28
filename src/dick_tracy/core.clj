@@ -61,8 +61,8 @@
         size {:x 45 :y 45}
         in? (collision? state loc size)]
     (cond
-      (and (not q/mouse-pressed?) in?)  (q/shape (:hover (:pencil (:tools state))) (:x loc) (:y loc) (:x size) (:y size))
-      (and q/mouse-pressed? in?) (q/shape (:click (:pencil (:tools state))) (:x loc) (:y loc) (:x size) (:y size))
+      (and (not (q/mouse-pressed?)) in?) (q/shape (:hover (:pencil (:tools state))) (:x loc) (:y loc) (:x size) (:y size))
+      (and (q/mouse-pressed?) in?) (q/shape (:click (:pencil (:tools state))) (:x loc) (:y loc) (:x size) (:y size))
       :else (q/shape (:normal (:pencil (:tools state))) (:x loc) (:y loc) (:x size) (:y size)))))
 
 (defn tool-tray [state]
@@ -89,22 +89,25 @@
   (assoc state :x (:x event) :y (:y event)))
 
 (defn update-state [state]
-  ; Update sketch state by changing circle color and position.
-  (let [is-drawing? (:drawing? state)]
+  (let [point {:x (:x state) :y (:y state)}
+        is-drawing? (:drawing? state)
+        toolbar? (collision? point {:x 5 :y 5} {:x (- WIDTH 10) :y 50})]
     (cond
-      (and q/mouse-pressed? (not is-drawing?)) (assoc state :drawing? true
-                                                      :paths (conj (:paths state) {:stroke (q/color 0 0 0) :fill (q/color 50 50 50) :points [{:x (:x state) :y (:y state)}]}))
-      (and q/mouse-pressed? is-drawing?) (append-point state {:x (:x state) :y (:y state)})
-      (or (q/key-pressed? :enter) (q/key-pressed? :return)) (assoc state :drawing? false)
+      (and (q/mouse-pressed?) (not toolbar?) (not is-drawing?)) (assoc state :drawing? true
+                                                      :paths (conj (:paths state) {:stroke (q/color 0 0 0) :fill (q/color 50 50 50) :points [point]}))
+      (and (q/mouse-pressed?) (not toolbar?) is-drawing?) (append-point state point)
+      (q/key-pressed?) (assoc state :drawing? false)
       ;; (:drawing? state)
       :else state
       ))
+  ;; state
   )
+
 
 (defn draw-state [state]
   ; Clear the sketch by filling it with light-grey color.
   (q/background 255 255 255)
-  ;; (draw-paths state)
+  (draw-paths state)
   (tool-tray state)
   ;; (q/fill 0 0 255)
   ;; (q/ellipse (:x state) (:y state) 20 20)
