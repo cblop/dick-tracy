@@ -1,6 +1,8 @@
 (ns dick-tracy.core
   (:require [quil.core :as q]
-            [quil.middleware :as m]))
+            [quil.middleware :as m]
+            [com.rpl.specter :refer :all]
+            [com.rpl.specter.macros :refer :all]))
 
 (def WIDTH 800)
 (def HEIGHT 600)
@@ -39,6 +41,14 @@
    :color 0
    :angle 0})
 
+(defn append-point [state point]
+  (transform [:paths LAST :points] #(conj % point) state))
+
+(defn add-point-to-path [point path]
+  )
+
+(defn update-paths [paths index path])
+
 (defn collision? [loc anchor size]
   (and
    (> (:x loc) (:x anchor))
@@ -51,8 +61,8 @@
         size {:x 45 :y 45}
         in? (collision? state loc size)]
     (cond
-      (and (not (q/mouse-pressed?)) in?)  (q/shape (:hover (:pencil (:tools state))) (:x loc) (:y loc) (:x size) (:y size))
-      (and (q/mouse-pressed?) in?) (q/shape (:click (:pencil (:tools state))) (:x loc) (:y loc) (:x size) (:y size))
+      (and (not q/mouse-pressed?) in?)  (q/shape (:hover (:pencil (:tools state))) (:x loc) (:y loc) (:x size) (:y size))
+      (and q/mouse-pressed? in?) (q/shape (:click (:pencil (:tools state))) (:x loc) (:y loc) (:x size) (:y size))
       :else (q/shape (:normal (:pencil (:tools state))) (:x loc) (:y loc) (:x size) (:y size)))))
 
 (defn tool-tray [state]
@@ -84,10 +94,7 @@
     (cond
       (and q/mouse-pressed? (not is-drawing?)) (assoc state :drawing? true
                                                       :paths (conj (:paths state) {:stroke (q/color 0 0 0) :fill (q/color 50 50 50) :points [{:x (:x state) :y (:y state)}]}))
-      (and q/mouse-pressed? is-drawing?)
-      (do
-        (println (:paths state))
-        (assoc-in state [:paths last] (assoc (last (:paths state)) :points (conj (:points (last (:paths state))) {:x (:x state) :y (:y state)}))))
+      (and q/mouse-pressed? is-drawing?) (append-point state {:x (:x state) :y (:y state)})
       (or (q/key-pressed? :enter) (q/key-pressed? :return)) (assoc state :drawing? false)
       ;; (:drawing? state)
       :else state
@@ -97,7 +104,7 @@
 (defn draw-state [state]
   ; Clear the sketch by filling it with light-grey color.
   (q/background 255 255 255)
-  (draw-paths state)
+  ;; (draw-paths state)
   (tool-tray state)
   ;; (q/fill 0 0 255)
   ;; (q/ellipse (:x state) (:y state) 20 20)
