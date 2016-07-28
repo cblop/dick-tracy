@@ -4,8 +4,8 @@
             [com.rpl.specter :refer :all]
             [com.rpl.specter.macros :refer :all]))
 
-(def WIDTH 800)
-(def HEIGHT 600)
+(def WIDTH 640)
+(def HEIGHT 480)
 
 (defn setup []
   ; Set frame rate to 30 frames per second.
@@ -85,6 +85,13 @@
     (doseq [p paths] (draw-path p))
     ))
 
+(defn draw-guide-line [state]
+  (if (:drawing? state)
+    (do
+      (let [last-point (last (:points (last (:paths state))))]
+        (q/stroke 0 0 0)
+        (q/line (:x last-point) (:y last-point) (:x state) (:y state))))))
+
 (defn mouse-moved [state event]
   (assoc state :x (:x event) :y (:y event)))
 
@@ -108,13 +115,14 @@
   ; Clear the sketch by filling it with light-grey color.
   (q/background 255 255 255)
   (draw-paths state)
+  (draw-guide-line state)
   (tool-tray state)
   ;; (q/fill 0 0 255)
   ;; (q/ellipse (:x state) (:y state) 20 20)
   )
 
 (q/defsketch dick-tracy
-  :title "You spin my circle right round"
+  :title "Dick Tracy"
   :size [WIDTH HEIGHT]
   ;; :settings #(q/smooth 4)
   ; setup function called only once, during sketch initialization.
