@@ -39,6 +39,7 @@
    :blue-grey ["#607d8b" "#eceff1" "#cfd8dc" "#b0bec5" "#90a4ae" "#78909c" "#607d8b" "#546e7a" "#455a64" "#37474f" "#263238"]
    :black-white ["#000000" "#ffffff"]))
 
+
 (defn setup []
   ; Set frame rate to 30 frames per second.
   ;; (q/frame-rate 30)
@@ -56,6 +57,25 @@
    :drawing? false
    :color-select? false
    :color (apply q/color (css-color (first (:blue colors))))})
+
+
+(defn get-color [state point offset size]
+  (let [cs (vals colors)
+        x-ind (int (Math/floor (/ (- (:x point) (:x offset)) (:x size))))
+        y-ind (int (Math/floor (/ (- (:y point) (:y offset)) (:y size))))
+        col (try
+              (nth (nth cs x-ind) y-ind)
+              (catch java.lang.IndexOutOfBoundsException e nil))
+        ]
+    (if col
+      ;; (apply q/color (css-color col))
+      (apply q/color (css-color col))
+      (:color state))))
+
+;; (get-color {:color "blue"} {:x 100 :y 100} {:x 50 :y 100} {:x 45 :y 45})
+;; (apply q/color '(233 30 99))
+
+
 
 (defn draw-color-overlay [state]
   (doall (map-indexed (fn [row key] (doall (map-indexed #(do
@@ -141,6 +161,7 @@
       (if color-overlay? (q/cursor :hand))
       (cond
         (and (q/mouse-pressed?) color? (not color-overlay?)) (assoc state :color-select? true)
+        (and (q/mouse-pressed?) (:color-select? state) color-overlay?) (assoc state :color-select? false :color (get-color state point {:x 50 :y 100} {:x 25 :y 25}))
         (and (q/mouse-pressed?) (not toolbar?) (not is-drawing?)) (assoc state :drawing? true
                                                                          :paths (conj (:paths state) {:stroke (:color state) :fill (:color state) :points [point]}))
         (and (q/mouse-pressed?) (not toolbar?) is-drawing?) (append-point state point)
